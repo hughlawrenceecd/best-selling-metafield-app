@@ -7,13 +7,27 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
+const getAppUrl = () => {
+  // Use environment variable if set
+  if (process.env.SHOPIFY_APP_URL) {
+    return process.env.SHOPIFY_APP_URL;
+  }
+  
+  // Fallback for production
+  if (process.env.NODE_ENV === "production") {
+    return "https://best-selling-metafield-app-zf8f2.ondigitalocean.app";
+  }
+  
+  // Development fallback
+  return "http://localhost:3000";
+};
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.January25,
   scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
-  authPathPrefix: "/auth",
+  appUrl:  getAppUrl(),
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   future: {
