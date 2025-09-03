@@ -5,20 +5,27 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 installGlobals({ nativeFetch: true });
 
-// Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
-// Replace the HOST env var with SHOPIFY_APP_URL so that it doesn't break the remix server. The CLI will eventually
-// stop passing in HOST, so we can remove this workaround after the next major release.
-if (
-  process.env.HOST &&
-  (!process.env.SHOPIFY_APP_URL ||
-    process.env.SHOPIFY_APP_URL === process.env.HOST)
-) {
-  process.env.SHOPIFY_APP_URL = process.env.HOST;
-  delete process.env.HOST;
-}
+// Safe environment variable handling
+const getHost = () => {
+  // For build time, use fallback values
+  if (typeof process === 'undefined' || !process.env) {
+    return "localhost";
+  }
+  
+  // Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
+  if (
+    process.env.HOST &&
+    (!process.env.SHOPIFY_APP_URL ||
+      process.env.SHOPIFY_APP_URL === process.env.HOST)
+  ) {
+    process.env.SHOPIFY_APP_URL = process.env.HOST;
+    delete process.env.HOST;
+  }
 
-const host = new URL(process.env.SHOPIFY_APP_URL || "http://localhost")
-  .hostname;
+  return new URL(process.env.SHOPIFY_APP_URL || "http://localhost").hostname;
+};
+
+const host = getHost();
 
 let hmrConfig;
 if (host === "localhost") {
@@ -29,12 +36,8 @@ if (host === "localhost") {
     clientPort: 64999,
   };
 } else {
-  hmrConfig = {
-    protocol: "wss",
-    host: host,
-    port: parseInt(process.env.FRONTEND_PORT!) || 8002,
-    clientPort: 443,
-  };
+  // For production, disable HMR or use safe defaults
+  hmrConfig = false; // Disable HMR in production
 }
 
 export default defineConfig({
@@ -46,7 +49,6 @@ export default defineConfig({
     port: Number(process.env.PORT || 3000),
     hmr: hmrConfig,
     fs: {
-      // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
       allow: ["app", "node_modules"],
     },
   },
