@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "5bd88204c916538da187c761c573787b"
+client_id = "5a9927f1dea83c75d21415fd5b1f72c0"
 application_url = "https://best-selling-metafield-app-zf8f2.ondigitalocean.app"
 embedded = true
 name = "sort-by-best-selling"
@@ -23,7 +23,7 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "write_products, read_products, read_metaobjects, write_metaobjects"
 
 [auth]
 redirect_urls = [
