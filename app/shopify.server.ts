@@ -1,49 +1,28 @@
-import "@shopify/shopify-app-remix/adapters/node";
+// app/shopify.server.ts
+import "@shopify/shopify-app/remix/adapters/node";
 import {
-  ApiVersion,
   AppDistribution,
+  DeliveryMethod,
   shopifyApp,
+  LATEST_API_VERSION,
 } from "@shopify/shopify-app-remix/server";
-import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
-import prisma from "./db.server";
-
-const getAppUrl = () => {
-  // Use environment variable if set
-  if (process.env.SHOPIFY_APP_URL) {
-    return process.env.SHOPIFY_APP_URL;
-  }
-  
-  // Fallback for production
-  if (process.env.NODE_ENV === "production") {
-    return "https://best-selling-metafield-app-zf8f2.ondigitalocean.app";
-  }
-  
-  // Development fallback
-  return "http://localhost:3000";
-};
+import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
 
 const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
-  apiVersion: ApiVersion.January25,
-  scopes: process.env.SCOPES?.split(","),
-  appUrl:  getAppUrl(),
-  sessionStorage: new PrismaSessionStorage(prisma),
+  apiKey: process.env.SHOPIFY_API_KEY!,
+  apiSecretKey: process.env.SHOPIFY_API_SECRET!,
+  apiVersion: LATEST_API_VERSION,
+  scopes: process.env.SCOPES?.split(",") || ["read_products", "write_products", "read_collections", "write_collections"],
+  appUrl: process.env.SHOPIFY_APP_URL!,
+  authPath: "/auth",
+  sessionStorage: new MemorySessionStorage(),
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,
-    removeRest: true,
   },
-  ...(process.env.SHOP_CUSTOM_DOMAIN
-    ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-    : {}),
 });
 
 export default shopify;
-export const apiVersion = ApiVersion.January25;
+export const apiVersion = LATEST_API_VERSION;
 export const addDocumentResponseHeaders = shopify.addDocumentResponseHeaders;
 export const authenticate = shopify.authenticate;
-export const unauthenticated = shopify.unauthenticated;
-export const login = shopify.login;
-export const registerWebhooks = shopify.registerWebhooks;
-export const sessionStorage = shopify.sessionStorage;
