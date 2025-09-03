@@ -134,7 +134,7 @@ async function updateCollectionBestSellers(admin: any, collectionId: string): Pr
         metafieldsSet(metafields: [
           {
             namespace: "custom"
-            key: "best_sellers"
+            key: "best_selling"
             type: "list.product_reference"
             ownerId: $ownerId
             value: $value
